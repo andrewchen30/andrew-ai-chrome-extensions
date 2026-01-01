@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>設定 - Andrew's AI-Box</title>
+  <link rel="stylesheet" href="options.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="../icons/icon48.png" alt="Logo">
+        <h2>Andrew AI</h2>
+      </div>
+      <nav>
+        <a href="#" class="active">🛡️ 專注攔截器</a>
+        <a href="#" class="disabled">🤖 AI 助手 (Coming)</a>
+        <a href="#" class="disabled">⚡ 快速啟動 (Coming)</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header class="content-header">
+        <h1>專注攔截器設定</h1>
+        <p>在這裡管理你想要屏蔽的網址。當你嘗試造訪這些網站時，系統會要求密碼並倒數 30 秒。</p>
+      </header>
+
+      <section class="settings-card">
+        <div class="card-header">
+          <h3>攔截清單</h3>
+          <p>請輸入網址關鍵字（例如：facebook.com）</p>
+        </div>
+
+        <div class="input-group">
+          <input type="text" id="domain-input" placeholder="例如: youtube.com">
+          <button id="add-btn">新增網域</button>
+        </div>
+
+        <ul id="domain-list">
+          <!-- Domains will be added here -->
+        </ul>
+
+        <div class="card-footer">
+          <p id="status-msg"></p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="options.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+:root {
+    --primary: #eba434;
+    --primary-hover: #d18f2b;
+    --text-main: #222222;
+    --text-secondary: #717171;
+    --bg-main: #ffffff;
+    --border-light: #dddddd;
+    --shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 360px;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.container {
+    padding: 24px;
+}
+
+header {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.logo img {
+    width: 28px;
+    height: 28px;
+}
+
+.logo span {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+}
+
+.tagline {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feature-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: box-shadow 0.2s ease, transform 0.1s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.feature-card:hover {
+    box-shadow: var(--shadow-soft);
+}
+
+.feature-card:active {
+    transform: scale(0.98);
+}
+
+.feature-card.locked {
+    opacity: 0.6;
+    background-color: #f9f9f9;
+    cursor: not-allowed;
+}
+
+.feature-icon {
+    font-size: 20px;
+    background: #f7f7f7;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--text-main);
+}
+
+.feature-info h3 {
+    margin: 0 0 2px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.feature-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #e1f5fe;
+    color: #039be5;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Specific badge color for primary theme */
+.feature-card.active .status-badge {
+    background: #fff8e1;
+    color: #f57f17;
+}
+
+footer {
+    margin-top: 24px;
+    padding-top: 16px;
+}
+
+.settings-btn {
+    width: 100%;
+    background: white;
+    border: 1px solid var(--text-main);
+    color: var(--text-main);
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.settings-btn:hover {
+    background: #f7f7f7;
+}
