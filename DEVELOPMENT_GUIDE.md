@@ -36,13 +36,16 @@
 1.  **功能定義**：明確該功能是屬於「攔截型」、「輔助型」還是「快捷型」。
 2.  **設計確認**：我會先確保 UI 符合上述 Design System。
 3.  **配置化**：新功能必須具備「可設定性」，並在 `options` 頁面提供對應的控制選項。
-4.  **Content Script 注入標準**：
-    -   使用 `all_urls` 但需先透過 `chrome.storage` 判斷當前網址是否命中功能。
-    -   必須包含 CSS Reset，防止宿主網站樣式干擾。
+4.  **架構標準 (Shadow DOM Single File)**：
+    -   **單一檔案原則**：功能邏輯與樣式必須合併於單一 `.js` 檔案中 (位於 `features/xxx/xxx.js`)。
+    -   **禁止額外 CSS**：樣式必須以 Template String 形式寫在 JS 內，並注入到 Shadow DOM。
+    -   **隔離性**：必須使用 `attachShadow({mode: 'open'})` 來隔離樣式，防止污染或被污染。
+5.  **測試計畫標準**：
+    -   每個功能資料夾必須包含 `TEST_PLAN.md`，詳細說明觸發條件與手動驗證步驟。
 
 ## 4. 程式碼規範與品質
 
--   **命名空間**：所有注入網頁的 ID 或 Class 必須帶有 `andrew-` 前綴（如 `#andrew-blocker-overlay`），以避免與網頁原生代碼衝突。
+-   **命名空間**：即使在 Shadow DOM 內，建議 Host ID 使用 `andrew-` 前綴。
 -   **異步處理**：所有與內容腳本相關的操作應確保 `document.documentElement` 已準備就緒。
 -   **圖標標準**：採用純色、細線條 (Thin-line art) 風格，主色統一使用 `#eba434`。
 

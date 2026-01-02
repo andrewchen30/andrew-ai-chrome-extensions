@@ -26,10 +26,7 @@
         "<all_urls>"
       ],
       "js": [
-        "content/blocker.js"
-      ],
-      "css": [
-        "content/blocker.css"
+        "features/website_blocker/blocker.js"
       ],
       "run_at": "document_start"
     }
