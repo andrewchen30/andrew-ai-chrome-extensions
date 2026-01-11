@@ -124,12 +124,22 @@
     }
     `;
 
+    const isWhitelisted = (url) => {
+        const whitelist = [
+            'facebook.com/dialog/oauth',
+            'facebook.com/login.php',
+            'facebook.com/v' // 匹配 API 版本如 v12.0
+        ];
+        return whitelist.some(pattern => url.includes(pattern));
+    };
+
     // Check if the current page should be blocked
     chrome.storage.sync.get({ blockedDomains: defaultDomains }, (data) => {
         const hostname = window.location.hostname;
+        const url = window.location.href;
         const isBlocked = data.blockedDomains.some(domain => hostname.includes(domain));
 
-        if (isBlocked) {
+        if (isBlocked && !isWhitelisted(url)) {
             initBlocker();
         }
     });
