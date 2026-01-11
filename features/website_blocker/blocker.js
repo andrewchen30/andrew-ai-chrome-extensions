@@ -1,6 +1,61 @@
 (function() {
     const defaultDomains = ['facebook.com', 'youtube.com', 'chess.com'];
 
+    // === 解鎖狀態管理函數 ===
+    
+    // 取得當前域名（移除 www. 前綴以統一處理）
+    function getCurrentDomain() {
+        return window.location.hostname.replace(/^www\./, '');
+    }
+
+    // 檢查解鎖狀態
+    async function checkUnlockStatus(domain) {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(['unlockStatus'], (result) => {
+                const unlockStatus = result.unlockStatus || {};
+                const status = unlockStatus[domain];
+                
+                if (status && status.expiryTime > Date.now()) {
+                    resolve(status);
+                } else {
+                    resolve(null);
+                }
+            });
+        });
+    }
+
+    // 儲存解鎖狀態
+    async function saveUnlockStatus(domain, expiryTime) {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(['unlockStatus'], (result) => {
+                const unlockStatus = result.unlockStatus || {};
+                unlockStatus[domain] = { expiryTime };
+                chrome.storage.local.set({ unlockStatus }, resolve);
+            });
+        });
+    }
+
+    // 清除解鎖狀態
+    async function clearUnlockStatus(domain) {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(['unlockStatus'], (result) => {
+                const unlockStatus = result.unlockStatus || {};
+                delete unlockStatus[domain];
+                chrome.storage.local.set({ unlockStatus }, resolve);
+            });
+        });
+    }
+
+    // 取得域名的計時器設定（分鐘）
+    async function getDomainTimer(domain) {
+        return new Promise((resolve) => {
+            chrome.storage.sync.get(['domainTimers'], (result) => {
+                const timers = result.domainTimers || {};
+                resolve(timers[domain] || 15); // 預設 15 分鐘
+            });
+        });
+    }
+
     const css = `
     :host {
         all: initial;
@@ -124,6 +179,53 @@
     }
     `;
 
+    const timerCSS = `
+    :host {
+        all: initial;
+    }
+    #andrew-timer-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 48px;
+        background: #eba434;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        z-index: 2147483646;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+    }
+
+    #andrew-timer-bar * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    #andrew-timer-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    #andrew-timer-text {
+        font-size: 14px;
+        opacity: 0.95;
+    }
+
+    #andrew-timer-time {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    `;
+
     const isWhitelisted = (url) => {
         const whitelist = [
             'facebook.com/dialog/oauth',
@@ -133,16 +235,91 @@
         return whitelist.some(pattern => url.includes(pattern));
     };
 
+    // 顯示頂部倒數計時器
+    function showCountdownTimer(expiryTime) {
+        // 檢查是否已經有計時器
+        const existingTimer = document.getElementById('andrew-timer-host');
+        if (existingTimer) {
+            existingTimer.remove();
+        }
+
+        const host = document.createElement('div');
+        host.id = 'andrew-timer-host';
+        const shadow = host.attachShadow({mode: 'open'});
+
+        shadow.innerHTML = `
+            <style>${timerCSS}</style>
+            <div id="andrew-timer-bar">
+                <div id="andrew-timer-content">
+                    <span id="andrew-timer-text">專注模式 · 剩餘時間</span>
+                    <span id="andrew-timer-time">00:00</span>
+                </div>
+            </div>
+        `;
+
+        document.documentElement.appendChild(host);
+
+        const timeDisplay = shadow.querySelector('#andrew-timer-time');
+        const domain = getCurrentDomain();
+
+        // 更新計時器顯示
+        function updateTimer() {
+            const remaining = expiryTime - Date.now();
+            
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                clearUnlockStatus(domain).then(() => {
+                    host.remove();
+                    initBlocker();
+                });
+                return;
+            }
+
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            timeDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        updateTimer();
+        const timerInterval = setInterval(updateTimer, 1000);
+    }
+
     // Check if the current page should be blocked
-    chrome.storage.sync.get({ blockedDomains: defaultDomains }, (data) => {
+    (async function init() {
         const hostname = window.location.hostname;
         const url = window.location.href;
-        const isBlocked = data.blockedDomains.some(domain => hostname.includes(domain));
+        const domain = getCurrentDomain();
 
-        if (isBlocked && !isWhitelisted(url)) {
+        // 1. 檢查白名單
+        if (isWhitelisted(url)) {
+            return;
+        }
+
+        // 2. 檢查是否在阻擋名單中
+        const data = await new Promise(resolve => {
+            chrome.storage.sync.get({ blockedDomains: defaultDomains }, resolve);
+        });
+
+        const isBlocked = data.blockedDomains.some(d => hostname.includes(d));
+        
+        if (!isBlocked) {
+            return;
+        }
+
+        // 3. 檢查解鎖狀態
+        const unlockStatus = await checkUnlockStatus(domain);
+        
+        if (unlockStatus && unlockStatus.expiryTime > Date.now()) {
+            // 已解鎖且未過期，顯示計時器
+            showCountdownTimer(unlockStatus.expiryTime);
+        } else {
+            // 未解鎖或已過期，顯示阻擋畫面
+            if (unlockStatus) {
+                await clearUnlockStatus(domain);
+            }
             initBlocker();
         }
-    });
+    })();
 
     function initBlocker() {
         // Create Host
@@ -231,9 +408,26 @@
 
             if (seconds <= 0) {
                 clearInterval(interval);
-                removeOverlay(hostElement, styleTag);
+                handleUnlockSuccess(hostElement, styleTag);
             }
         }, 1000);
+    }
+
+    async function handleUnlockSuccess(hostElement, styleTag) {
+        const domain = getCurrentDomain();
+        
+        // 取得該域名的計時器設定
+        const timerMinutes = await getDomainTimer(domain);
+        const expiryTime = Date.now() + timerMinutes * 60 * 1000;
+        
+        // 儲存解鎖狀態
+        await saveUnlockStatus(domain, expiryTime);
+        
+        // 移除阻擋畫面
+        removeOverlay(hostElement, styleTag);
+        
+        // 顯示頂部計時器
+        showCountdownTimer(expiryTime);
     }
 
     function removeOverlay(hostElement, styleTag) {

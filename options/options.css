@@ -207,7 +207,58 @@ ul#domain-list li:last-child {
     color: var(--text-secondary);
 }
 
-#status-msg {
+/* Timer List */
+ul#timer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+ul#timer-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+ul#timer-list li:last-child {
+    border-bottom: none;
+}
+
+.timer-item-left {
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+.timer-item-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timer-item-right input[type="number"] {
+    width: 80px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    text-align: center;
+    outline: none;
+}
+
+.timer-item-right input[type="number"]:focus {
+    border-color: var(--text-main);
+}
+
+.timer-item-right span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+#status-msg,
+#timer-status-msg {
     margin-top: 16px;
     font-size: 0.9rem;
     color: #222222;
