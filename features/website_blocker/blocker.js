@@ -286,6 +286,11 @@
 
     // Check if the current page should be blocked
     (async function init() {
+        // Prevent running in iframes
+        if (window.top !== window.self) {
+            return;
+        }
+
         const hostname = window.location.hostname;
         const url = window.location.href;
         const domain = getCurrentDomain();
@@ -336,7 +341,7 @@
                     <p>這個網站可能會分散你的注意力。如果你真的需要進入，請輸入密碼並等待冷卻。</p>
                     
                     <div id="password-section">
-                        <input type="password" id="andrew-password-input" placeholder="請輸入密碼..." autocomplete="off">
+                        <input type="password" id="andrew-password-input" name="andrew-unlock-token" data-1p-ignore autocomplete="new-password" placeholder="請輸入密碼..." >
                         <button id="andrew-unlock-btn">開始解鎖</button>
                     </div>
 
