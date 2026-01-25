@@ -145,11 +145,20 @@ input[type="text"] {
     border-radius: 8px;
     outline: none;
     font-size: 1rem;
-    transition: border-color 0.2s;
+    font-family: inherit;
+    transition: all 0.2s;
+    background: white;
+    color: var(--text-main);
 }
 
 input[type="text"]:focus {
     border-color: var(--text-main);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
 }
 
 button#add-btn {
@@ -240,16 +249,28 @@ ul#timer-list li:last-child {
 
 .timer-item-right input[type="number"] {
     width: 80px;
-    padding: 8px 12px;
+    padding: 10px 12px;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.95rem;
+    font-family: inherit;
     text-align: center;
     outline: none;
+    background: white;
+    color: var(--text-main);
+    transition: all 0.2s;
+    -moz-appearance: textfield;
+}
+
+.timer-item-right input[type="number"]::-webkit-outer-spin-button,
+.timer-item-right input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .timer-item-right input[type="number"]:focus {
     border-color: var(--text-main);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
 
 .timer-item-right span {
@@ -258,9 +279,457 @@ ul#timer-list li:last-child {
 }
 
 #status-msg,
-#timer-status-msg {
+#timer-status-msg,
+#stats-status-msg {
     margin-top: 16px;
     font-size: 0.9rem;
     color: #222222;
     font-weight: 600;
+}
+
+/* Page Content */
+.page-content {
+    width: 100%;
+}
+
+.page-content.hidden {
+    display: none;
+}
+
+/* Buttons */
+.primary-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.primary-btn:hover {
+    background: var(--primary-hover);
+}
+
+.secondary-btn {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+    background: #f7f7f7;
+    border-color: var(--text-main);
+}
+
+/* Add Rule Form */
+.add-rule-form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fafafa;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.add-rule-form .custom-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+    background: white;
+    color: var(--text-main);
+}
+
+.add-rule-form .custom-input:focus {
+    border-color: var(--text-main);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.add-rule-form .custom-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.add-rule-form .primary-btn {
+    white-space: nowrap;
+}
+
+/* Rule Card - Compact Horizontal Layout */
+.rule-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.rule-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: #ccc;
+}
+
+.rule-card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.rule-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Custom Checkbox */
+.rule-enabled {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.rule-enabled:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.rule-enabled:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.rule-enabled:hover {
+    border-color: var(--primary);
+}
+
+.rule-enabled:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(235, 164, 52, 0.2);
+}
+
+.rule-domain {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+}
+
+.delete-rule-btn {
+    background: transparent;
+    color: #ef4444;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.delete-rule-btn:hover {
+    background: #fee2e2;
+}
+
+.rule-card-body {
+    display: grid;
+    grid-template-columns: 100px 170px 170px 1fr;
+    gap: 14px;
+    align-items: start;
+    min-width: 0;
+}
+
+/* 當例外網址很多時，改為垂直佈局 */
+.rule-card-body.has-many-exceptions {
+    grid-template-columns: 1fr;
+}
+
+/* 例外網址欄位在橫向佈局時跨越所有列 */
+.rule-field.exception-field {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.rule-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.rule-field label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.rule-field input[type="number"] {
+    width: 100%;
+    min-width: 70px;
+    padding: 7px 9px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+    background: white;
+    color: var(--text-main);
+    -moz-appearance: textfield;
+    box-sizing: border-box;
+}
+
+.rule-field input[type="number"]::-webkit-outer-spin-button,
+.rule-field input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.rule-field input[type="number"]:focus {
+    border-color: var(--text-main);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Schedule Controls */
+.schedule-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    width: 100%;
+}
+
+/* Custom Select Styling */
+.schedule-controls select,
+.time-range-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 7px 24px 7px 9px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23222222' d='M6 9L1 4h10z'/%3E%3C/svg%3E") no-repeat right 8px center;
+    background-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-main);
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.schedule-controls select:hover,
+.time-range-group select:hover {
+    border-color: var(--text-main);
+}
+
+.schedule-controls select:focus,
+.time-range-group select:focus {
+    border-color: var(--text-main);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.schedule-controls select option,
+.time-range-group select option {
+    padding: 8px;
+    background: white;
+    color: var(--text-main);
+}
+
+.time-range-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    width: 100%;
+}
+
+.time-range-group select {
+    flex: 1;
+    min-width: 0;
+    max-width: 85px;
+}
+
+.time-range-group span {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Exception URLs */
+.exception-urls-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.input-group-small {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.input-group-small input[type="text"] {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+    background: white;
+    color: var(--text-main);
+}
+
+.input-group-small input[type="text"]:focus {
+    border-color: var(--text-main);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.input-group-small input[type="text"]::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.add-exception-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.add-exception-btn:hover {
+    background: var(--primary-hover);
+}
+
+.exception-urls-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.exception-urls-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.exception-urls-list li span {
+    color: var(--text-main);
+}
+
+.delete-exception-btn {
+    background: transparent;
+    color: #ef4444;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.delete-exception-btn:hover {
+    background: #fee2e2;
+}
+
+/* Stats Table */
+#stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+#stats-table thead {
+    background: #f7f7f7;
+}
+
+#stats-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    border-bottom: 2px solid var(--border);
+}
+
+#stats-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+#stats-table tbody tr:hover {
+    background: #fafafa;
+}
+
+#stats-table tbody tr:last-child td {
+    border-bottom: none;
 }

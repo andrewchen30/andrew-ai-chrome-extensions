@@ -1,6 +1,127 @@
 (function() {
     const defaultDomains = ['facebook.com', 'youtube.com', 'chess.com'];
 
+    // === 時間工具函數 ===
+    
+    // 取得台灣時間（UTC+8）
+    function getTaiwanTime() {
+        const now = new Date();
+        // 轉換為台灣時間 (UTC+8)
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const taiwanTime = new Date(utc + (8 * 3600000));
+        return taiwanTime;
+    }
+
+    // 取得當前時間（30分鐘為單位）
+    function getCurrentTimeSlot() {
+        const taiwanTime = getTaiwanTime();
+        const hours = String(taiwanTime.getHours()).padStart(2, '0');
+        const minutes = String(Math.floor(taiwanTime.getMinutes() / 30) * 30).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+    // 檢查是否在封鎖時間範圍內
+    function isWithinBlockingTime(rule) {
+        const taiwanTime = getTaiwanTime();
+        const dayOfWeek = taiwanTime.getDay(); // 0=週日, 6=週六
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const currentTime = getCurrentTimeSlot();
+
+        const schedule = isWeekend ? rule.schedule.weekends : rule.schedule.weekdays;
+        
+        // 如果沒有設定，不封鎖
+        if (!schedule) {
+            return false;
+        }
+        
+        // 如果是整日，封鎖
+        if (schedule === 'all-day') {
+            return true;
+        }
+
+        // 比較時間範圍
+        return currentTime >= schedule.start && currentTime < schedule.end;
+    }
+
+    // === 資料遷移函數 ===
+    
+    // 遷移舊資料到新格式
+    async function migrateOldData() {
+        return new Promise((resolve) => {
+            chrome.storage.sync.get(['blockedDomains', 'domainTimers', 'blockingRules'], (data) => {
+                // 如果已經有新格式，不需要遷移
+                if (data.blockingRules && data.blockingRules.length > 0) {
+                    resolve();
+                    return;
+                }
+
+                // 如果有舊資料，進行遷移
+                if (data.blockedDomains && data.blockedDomains.length > 0) {
+                    const rules = data.blockedDomains.map((domain, index) => {
+                        const timer = (data.domainTimers && data.domainTimers[domain]) || 15;
+                        return {
+                            id: `rule_${Date.now()}_${index}`,
+                            domain: domain,
+                            enabled: true,
+                            unlockDuration: timer,
+                            exceptionUrls: [],
+                            schedule: {
+                                weekdays: 'all-day',
+                                weekends: 'all-day'
+                            }
+                        };
+                    });
+
+                    chrome.storage.sync.set({ blockingRules: rules }, () => {
+                        // 清除舊資料
+                        chrome.storage.sync.remove(['blockedDomains', 'domainTimers'], resolve);
+                    });
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    // === 規則匹配函數 ===
+    
+    // 找到匹配的規則
+    async function findMatchingRule(hostname, url) {
+        const { blockingRules = [] } = await new Promise(resolve => {
+            chrome.storage.sync.get({ blockingRules: [] }, resolve);
+        });
+
+        for (const rule of blockingRules) {
+            if (!rule.enabled) continue;
+            if (!hostname.includes(rule.domain)) continue;
+
+            // 檢查例外網址
+            if (rule.exceptionUrls && rule.exceptionUrls.some(exception => url.includes(exception))) {
+                continue;
+            }
+
+            // 檢查時間
+            if (isWithinBlockingTime(rule)) {
+                return rule;
+            }
+        }
+
+        return null;
+    }
+
+    // === 觸發記錄函數 ===
+    
+    // 記錄規則觸發
+    async function recordRuleTrigger(ruleId) {
+        return new Promise((resolve) => {
+            chrome.storage.local.get({ blockingStats: {} }, (result) => {
+                const stats = result.blockingStats || {};
+                stats[ruleId] = (stats[ruleId] || 0) + 1;
+                chrome.storage.local.set({ blockingStats: stats }, resolve);
+            });
+        });
+    }
+
     // === 解鎖狀態管理函數 ===
     
     // 取得當前域名（移除 www. 前綴以統一處理）
@@ -46,14 +167,12 @@
         });
     }
 
-    // 取得域名的計時器設定（分鐘）
-    async function getDomainTimer(domain) {
-        return new Promise((resolve) => {
-            chrome.storage.sync.get(['domainTimers'], (result) => {
-                const timers = result.domainTimers || {};
-                resolve(timers[domain] || 15); // 預設 15 分鐘
-            });
-        });
+    // 取得規則的解鎖時長（分鐘）
+    async function getRuleUnlockDuration(rule) {
+        if (rule && rule.unlockDuration) {
+            return rule.unlockDuration;
+        }
+        return 15; // 預設 15 分鐘
     }
 
     const css = `
@@ -291,6 +410,9 @@
             return;
         }
 
+        // 遷移舊資料
+        await migrateOldData();
+
         const hostname = window.location.hostname;
         const url = window.location.href;
         const domain = getCurrentDomain();
@@ -300,18 +422,17 @@
             return;
         }
 
-        // 2. 檢查是否在阻擋名單中
-        const data = await new Promise(resolve => {
-            chrome.storage.sync.get({ blockedDomains: defaultDomains }, resolve);
-        });
-
-        const isBlocked = data.blockedDomains.some(d => hostname.includes(d));
+        // 2. 找到匹配的規則
+        const matchingRule = await findMatchingRule(hostname, url);
         
-        if (!isBlocked) {
+        if (!matchingRule) {
             return;
         }
 
-        // 3. 檢查解鎖狀態
+        // 3. 記錄觸發
+        await recordRuleTrigger(matchingRule.id);
+
+        // 4. 檢查解鎖狀態
         const unlockStatus = await checkUnlockStatus(domain);
         
         if (unlockStatus && unlockStatus.expiryTime > Date.now()) {
@@ -420,9 +541,24 @@
 
     async function handleUnlockSuccess(hostElement, styleTag) {
         const domain = getCurrentDomain();
+        const hostname = window.location.hostname;
+        const url = window.location.href;
         
-        // 取得該域名的計時器設定
-        const timerMinutes = await getDomainTimer(domain);
+        // 找到匹配的規則以取得解鎖時長
+        // 注意：即使規則現在不匹配（例如時間過了），我們仍需要解鎖時長
+        // 所以我們嘗試找到規則，如果找不到則使用預設值
+        let matchingRule = await findMatchingRule(hostname, url);
+        
+        // 如果找不到匹配的規則（例如規則被停用或時間不匹配），
+        // 嘗試從所有規則中找到該網域的規則以取得解鎖時長
+        if (!matchingRule) {
+            const { blockingRules = [] } = await new Promise(resolve => {
+                chrome.storage.sync.get({ blockingRules: [] }, resolve);
+            });
+            matchingRule = blockingRules.find(r => hostname.includes(r.domain));
+        }
+        
+        const timerMinutes = await getRuleUnlockDuration(matchingRule);
         const expiryTime = Date.now() + timerMinutes * 60 * 1000;
         
         // 儲存解鎖狀態

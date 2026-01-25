@@ -17,52 +17,77 @@
         <h2>Andrew AI</h2>
       </div>
       <nav>
-        <a href="#" class="active">🛡️ 專注攔截器</a>
+        <a href="#" data-page="rules" class="active">🛡️ 規則設定</a>
+        <a href="#" data-page="stats">📊 統計</a>
         <a href="#" class="disabled">🤖 AI 助手 (Coming)</a>
         <a href="#" class="disabled">⚡ 快速啟動 (Coming)</a>
       </nav>
     </aside>
 
     <main class="content">
-      <header class="content-header">
-        <h1>專注攔截器設定</h1>
-        <p>在這裡管理你想要屏蔽的網址。當你嘗試造訪這些網站時，系統會要求密碼並倒數 30 秒。</p>
-      </header>
+      <!-- 規則設定頁面 -->
+      <div id="rules-page" class="page-content">
+        <header class="content-header">
+          <h1>封鎖規則設定</h1>
+          <p>為每個網站設定不同的封鎖規則，包括時間範圍、解鎖時長和例外網址。</p>
+        </header>
 
-      <section class="settings-card">
-        <div class="card-header">
-          <h3>攔截清單</h3>
-          <p>請輸入網址關鍵字（例如：facebook.com）</p>
-        </div>
+        <section class="settings-card">
+          <div class="card-header">
+            <h3>封鎖規則</h3>
+            <p>管理你的網站封鎖規則</p>
+          </div>
 
-        <div class="input-group">
-          <input type="text" id="domain-input" placeholder="例如: youtube.com">
-          <button id="add-btn">新增網域</button>
-        </div>
+          <div class="add-rule-form">
+            <input type="text" id="new-domain-input" class="custom-input" placeholder="輸入網域（例如：youtube.com）">
+            <button id="add-rule-btn" class="primary-btn">+ 新增規則</button>
+          </div>
 
-        <ul id="domain-list">
-          <!-- Domains will be added here -->
-        </ul>
+          <div id="rules-list">
+            <!-- Rules will be added here -->
+          </div>
 
-        <div class="card-footer">
-          <p id="status-msg"></p>
-        </div>
-      </section>
+          <div class="card-footer">
+            <p id="status-msg"></p>
+          </div>
+        </section>
+      </div>
 
-      <section class="settings-card" style="margin-top: 24px;">
-        <div class="card-header">
-          <h3>解鎖時長設定</h3>
-          <p>設定每個網域解鎖後的可瀏覽時間（分鐘）</p>
-        </div>
+      <!-- 統計頁面 -->
+      <div id="stats-page" class="page-content hidden">
+        <header class="content-header">
+          <h1>觸發統計</h1>
+          <p>查看每個規則的觸發次數統計</p>
+        </header>
 
-        <ul id="timer-list">
-          <!-- Timer settings will be added here -->
-        </ul>
+        <section class="settings-card">
+          <div class="card-header">
+            <h3>規則觸發統計</h3>
+            <p>記錄每個規則被觸發的次數</p>
+          </div>
 
-        <div class="card-footer">
-          <p id="timer-status-msg"></p>
-        </div>
-      </section>
+          <div style="margin-bottom: 16px; text-align: right;">
+            <button id="reset-stats-btn" class="secondary-btn">重置統計</button>
+          </div>
+
+          <table id="stats-table">
+            <thead>
+              <tr>
+                <th>規則網域</th>
+                <th>啟用狀態</th>
+                <th>觸發次數</th>
+              </tr>
+            </thead>
+            <tbody id="stats-tbody">
+              <!-- Stats will be added here -->
+            </tbody>
+          </table>
+
+          <div class="card-footer">
+            <p id="stats-status-msg"></p>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
   <script src="options.js"></script>
